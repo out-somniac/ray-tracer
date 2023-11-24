@@ -7,22 +7,24 @@ use ray::Ray;
 use cgmath::Vector3;
 use cgmath::InnerSpace;
 
-fn sphere_hit(center: Vector3<f64>, radius: f64, ray: Ray<f64>) -> bool {
+use image::{ImageBuffer, RgbImage};
+
+fn sphere_hit(center: Vector3<f64>, radius: f64, ray: Ray) -> Option<f64> {
     let oc = ray.origin - center;
     let a: f64 = ray.direction.dot(ray.direction);
     let b: f64 = 2.0 * oc.dot(ray.direction);
-    let c: f64 = oc.dot(oc) - radius*radius;
+    let c: f64 = oc.dot(oc) - radius * radius;
     let discriminant = b*b - 4.0*a*c;
-    return discriminant >= 0.0;
+    if discriminant < 0.0 {
+        return None;
+    } else {
+        return Some(( - b - discriminant.sqrt() ) / ( 2.0 * a ));
+    }
 }
 
-fn ray_color(ray: Ray<f64>) -> Color {
-    if sphere_hit(Vector3::new(0.0, 0.0, -1.0), 0.5, ray) {
-        return Color {red: 255, green: 0, blue: 0}
-    }
-
+fn sky_color(ray: Ray) -> Color {
     let normalized = ray.direction.normalize();
-    let alpha = 0.5 * (normalized.x + 1.0);
+    let alpha = 0.5 * (normalized.y + 1.0);
     let value = (1.0 - alpha)* Vector3::new(1.0, 1.0, 1.0) + alpha * Vector3::new(0.5, 0.7, 1.0);
 
     return Color {
@@ -30,13 +32,32 @@ fn ray_color(ray: Ray<f64>) -> Color {
         green:  (255.999 * value.y) as u8,
         blue:   (255.999 * value.z) as u8
     };
+}
+
+fn ray_color(ray: Ray) -> Color {
+    let sphere_center: Vector3<f64> = Vector3::new(0.0, 0.0, -1.0);
+
+    return match sphere_hit(sphere_center, 0.5, ray) {
+        Some(distance) => {
+            let normal: Vector3<f64> = (ray.at(distance) - sphere_center).normalize();
+            let value: Vector3<f64> = 0.5 * (normal + Vector3::new(1.0, 1.0, 1.0));
+            return Color { 
+                red:   (255.999 * value.x) as u8,
+                green: (255.999 * value.y) as u8,
+                blue:  (255.999 * value.z) as u8
+            };
+        }
+        None => sky_color(ray)
+    };
 }  
  
 fn main() {
+
     //Image setup
-    let aspect_ratio = 1.0;
+    let aspect_ratio = 16.0 / 9.0;
     let image_width: u32 = 800;
     let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
+    let mut image: RgbImage = ImageBuffer::new(image_width, image_height);
 
     // Camera parameters
     let focal_length = 1.0;
@@ -57,15 +78,15 @@ fn main() {
                               - viewport_v / 2.0;
     let pixel_upper_left = viewport_upper_left + 0.5 * (delta_u + delta_v);
 
-    // PPM file header
-    print!("{}", format!("P3\n{} {}\n255\n", image_width, image_height));
     for i in 0..image_width {
         for j in 0..image_height {
             let pixel = pixel_upper_left + (i as f64) * delta_u + (j as f64) * delta_v;
             let ray_direction = pixel - camera_center;
             let ray = Ray::new(camera_center, ray_direction.clone());
             let color = ray_color(ray);
-            println!("{}", color.to_string());
+            let pixel = image.get_pixel_mut(i, j);
+            *pixel = image::Rgb([color.red, color.green, color.blue]);
         }
     }
+    image.save("test.png").unwrap();
 }

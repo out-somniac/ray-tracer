@@ -1,16 +1,20 @@
 use cgmath::Vector3;
 
 #[derive(Clone, Copy)]
-pub struct Ray<T> {
-    pub origin: Vector3<T>,
-    pub direction: Vector3<T>   
+pub struct Ray {
+    pub origin: Vector3<f64>,
+    pub direction: Vector3<f64>   
 }
 
-impl<T> Ray<T> {
-    pub const fn new(origin: Vector3<T>, direction: Vector3<T>) -> Ray<T> {
+impl Ray {
+    pub const fn new(origin: Vector3<f64>, direction: Vector3<f64>) -> Ray {
         Ray {
             origin: origin,
             direction: direction
         }
+    }
+
+    pub fn at(self, t: f64) -> Vector3<f64> {
+        return self.origin + t * self.direction;
     }
 }
