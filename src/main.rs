@@ -4,22 +4,23 @@ use color::Color;
 mod ray;
 use ray::Ray;
 
+mod sphere;
+use sphere::Sphere;
+
 use cgmath::Vector3;
 use cgmath::InnerSpace;
+
+mod hits;
+use crate::hits::Hittable;
 
 use image::{ImageBuffer, RgbImage};
 
 fn sphere_hit(center: Vector3<f64>, radius: f64, ray: Ray) -> Option<f64> {
-    let oc = ray.origin - center;
-    let a: f64 = ray.direction.dot(ray.direction);
-    let b: f64 = 2.0 * oc.dot(ray.direction);
-    let c: f64 = oc.dot(oc) - radius * radius;
-    let discriminant = b*b - 4.0*a*c;
-    if discriminant < 0.0 {
-        return None;
-    } else {
-        return Some(( - b - discriminant.sqrt() ) / ( 2.0 * a ));
-    }
+    let sphere = Sphere {
+        origin: Vector3::new(center.x, center.y, center.z),
+        radius: radius
+    };
+    return sphere.hit(ray, 0.01, 1000.0);
 }
 
 fn sky_color(ray: Ray) -> Color {
