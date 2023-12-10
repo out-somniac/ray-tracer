@@ -11,6 +11,7 @@ pub struct Sphere {
 
 impl Hittable for Sphere {
     fn hit(&self, ray: Ray, min_distance: f64, max_distance: f64) -> Option<HitRecord> {
+        // TODO: This function should be refactored once I have some time
         let oc = ray.origin - self.origin;
         let a: f64 = ray.direction.dot(ray.direction);
         let half_b: f64 = oc.dot(ray.direction);
