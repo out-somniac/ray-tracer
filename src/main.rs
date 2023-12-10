@@ -11,11 +11,11 @@ use cgmath::Vector3;
 use cgmath::InnerSpace;
 
 mod hits;
-use crate::hits::Hittable;
+use crate::hits::{Hittable, HitRecord};
 
 use image::{ImageBuffer, RgbImage};
 
-fn sphere_hit(center: Vector3<f64>, radius: f64, ray: Ray) -> Option<f64> {
+fn sphere_hit(center: Vector3<f64>, radius: f64, ray: Ray) -> Option<HitRecord> {
     let sphere = Sphere {
         origin: Vector3::new(center.x, center.y, center.z),
         radius: radius
@@ -39,8 +39,8 @@ fn ray_color(ray: Ray) -> Color {
     let sphere_center: Vector3<f64> = Vector3::new(0.0, 0.0, -1.0);
 
     return match sphere_hit(sphere_center, 0.5, ray) {
-        Some(distance) => {
-            let normal: Vector3<f64> = (ray.at(distance) - sphere_center).normalize();
+        Some(record) => {
+            let normal: Vector3<f64> = (ray.at(record.distance) - sphere_center).normalize();
             let value: Vector3<f64> = 0.5 * (normal + Vector3::new(1.0, 1.0, 1.0));
             return Color { 
                 red:   (255.999 * value.x) as u8,
