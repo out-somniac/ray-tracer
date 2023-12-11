@@ -10,6 +10,28 @@ use cgmath::{Vector3, InnerSpace};
 use hits::{Hittable};
 use image::{ImageBuffer, RgbImage};
 
+// TODO: This should be done better
+fn rand_normal() -> Vector3<f64> {
+    use rand::distributions::{Distribution, Uniform}; 
+    let mut rng = rand::thread_rng();
+    let distribution = Uniform::new(-1.0, 1.0);
+    loop {
+        let random = Vector3::new(
+            distribution.sample(&mut rng),
+            distribution.sample(&mut rng),
+            distribution.sample(&mut rng));
+
+        if random.dot(random) <= 1.0 {
+            return random.normalize();
+        }
+    }
+}
+
+fn rand_on_hemisphere(normal: Vector3<f64>) -> Vector3<f64> {
+    let random = rand_normal();
+    return if random.dot(normal) > 0.0 { random } else { -random }
+}
+
 fn sky_color(ray: Ray) -> Color {
     let normalized = ray.direction.normalize();
     let alpha = 0.5 * (normalized.y + 1.0);
@@ -39,13 +61,14 @@ fn ray_color(ray: Ray) -> Color {
 
     return match objects.hit(ray, t_min, t_max) {
         Some(record) => {
-            let value: Vector3<f64> = 0.5 * (record.normal + Vector3::new(1.0, 1.0, 1.0));
-            // TODO: Move to some `from_vector` function in `Color`.
-            return Color { 
-                red:   (255.999 * value.x) as u8,
-                green: (255.999 * value.y) as u8,
-                blue:  (255.999 * value.z) as u8
-            };
+            let direction = rand_on_hemisphere(record.normal);
+            return ray_color(Ray::new(record.hit, direction));
+            // let value: Vector3<f64> = 0.5 * (record.normal + Vector3::new(1.0, 1.0, 1.0));
+            // return Color { 
+                // red:   (255.999 * value.x) as u8,
+                // green: (255.999 * value.y) as u8,
+                // blue:  (255.999 * value.z) as u8
+            // };
         },
         None => sky_color(ray)
     }
