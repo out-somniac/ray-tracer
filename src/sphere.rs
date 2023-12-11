@@ -4,6 +4,7 @@ use crate::hits::{HitRecord, Hittable};
 use cgmath::Vector3;
 use cgmath::InnerSpace;
 
+#[derive(Debug)]
 pub struct Sphere {
     pub origin: Vector3<f64>,
     pub radius: f64

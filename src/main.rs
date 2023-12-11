@@ -29,14 +29,31 @@ fn sky_color(ray: Ray) -> Color {
 }
 
 fn ray_color(ray: Ray) -> Color {
-    let sphere = Sphere {
-        origin: Vector3::new(0.0, 0.0, -1.0),
-        radius: 0.5
-    };
+    let objects = vec!(
+        Sphere {
+            origin: Vector3::new(-0.5, 0.0, -1.0),
+            radius: 0.5
+        },
+        Sphere {
+            origin: Vector3::new(0.0, 0.0, -1.5),
+            radius: 0.5
+        }
+    );
 
     let t_max = 1000.0;
     let t_min = 0.001;
-    return match sphere.hit(ray, t_min, t_max) {
+
+    let hits = objects
+        .into_iter()
+        .map(|obj| obj.hit(ray, t_min, t_max))
+        .filter(|hit| hit.is_some())
+        .map(|hit| hit.unwrap());
+    
+
+    let closest_hit = hits
+        .min_by(|a, b| a.partial_cmp(&b).expect("Failed during HitRecord partial comparison"));
+
+    return match closest_hit {
         Some(record) => {
             let value: Vector3<f64> = 0.5 * (record.normal + Vector3::new(1.0, 1.0, 1.0));
             // TODO: Move to some `from_vector` function in `Color`.

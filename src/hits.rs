@@ -2,12 +2,12 @@ use crate::ray::Ray;
 use cgmath::Vector3;
 use std::cmp::Ordering;
 
+#[derive(Clone, Debug)]
 pub struct HitRecord {
     pub hit: Vector3<f64>,
     pub distance: f64,
     pub normal: Vector3<f64>
 }
-
 
 impl PartialOrd for HitRecord {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
