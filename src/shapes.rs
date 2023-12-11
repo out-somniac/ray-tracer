@@ -4,10 +4,24 @@ use crate::hits::{HitRecord, Hittable};
 use cgmath::Vector3;
 use cgmath::InnerSpace;
 
-#[derive(Debug)]
 pub struct Sphere {
     pub origin: Vector3<f64>,
     pub radius: f64
+}
+
+impl Hittable for Vec<Box<dyn Hittable>> {
+    fn hit(&self, ray: Ray, min_distance: f64, max_distance: f64) -> Option<HitRecord> {
+        let hits = self
+            .into_iter()
+            .map(|obj| obj.hit(ray, min_distance, max_distance))
+            .filter(|hit| hit.is_some())
+            .map(|hit| hit.unwrap());
+    
+        let closest_hit = hits
+            .min_by(|a, b| a.partial_cmp(&b).expect("Failed during HitRecord partial comparison"));
+
+        return closest_hit;
+    }
 }
 
 impl Hittable for Sphere {

@@ -1,19 +1,13 @@
 mod color;
-use color::Color;
-
+mod shapes;
 mod ray;
-use ray::Ray;
-
-mod sphere;
-use sphere::Sphere;
-
-use cgmath::Vector3;
-use cgmath::InnerSpace;
-
 mod hits;
-#[allow(unused_imports)]
-use crate::hits::{Hittable, HitRecord};
 
+use color::Color;
+use ray::Ray;
+use shapes::Sphere;
+use cgmath::{Vector3, InnerSpace};
+use hits::{Hittable};
 use image::{ImageBuffer, RgbImage};
 
 fn sky_color(ray: Ray) -> Color {
@@ -29,31 +23,21 @@ fn sky_color(ray: Ray) -> Color {
 }
 
 fn ray_color(ray: Ray) -> Color {
-    let objects = vec!(
-        Sphere {
+    let objects: Vec<Box<dyn Hittable>> = vec!(
+        Box::new(Sphere {
             origin: Vector3::new(-0.5, 0.0, -1.0),
             radius: 0.5
-        },
-        Sphere {
+        }),
+        Box::new(Sphere {
             origin: Vector3::new(0.0, 0.0, -1.5),
             radius: 0.5
-        }
+        })
     );
 
     let t_max = 1000.0;
     let t_min = 0.001;
 
-    let hits = objects
-        .into_iter()
-        .map(|obj| obj.hit(ray, t_min, t_max))
-        .filter(|hit| hit.is_some())
-        .map(|hit| hit.unwrap());
-    
-
-    let closest_hit = hits
-        .min_by(|a, b| a.partial_cmp(&b).expect("Failed during HitRecord partial comparison"));
-
-    return match closest_hit {
+    return match objects.hit(ray, t_min, t_max) {
         Some(record) => {
             let value: Vector3<f64> = 0.5 * (record.normal + Vector3::new(1.0, 1.0, 1.0));
             // TODO: Move to some `from_vector` function in `Color`.
