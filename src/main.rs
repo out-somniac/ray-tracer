@@ -1,9 +1,7 @@
-mod color;
 mod shapes;
 mod ray;
 mod hits;
 
-use color::Color;
 use ray::Ray;
 use shapes::Sphere;
 use cgmath::{Vector3, InnerSpace};
@@ -21,7 +19,7 @@ fn rand_normal() -> Vector3<f64> {
             distribution.sample(&mut rng),
             distribution.sample(&mut rng));
 
-        if random.dot(random) <= 1.0 {
+        if random.dot(random) < 1.0 {
             return random.normalize();
         }
     }
@@ -32,43 +30,43 @@ fn rand_on_hemisphere(normal: Vector3<f64>) -> Vector3<f64> {
     return if random.dot(normal) > 0.0 { random } else { -random }
 }
 
-fn sky_color(ray: Ray) -> Color {
-    let normalized = ray.direction.normalize();
-    let alpha = 0.5 * (normalized.y + 1.0);
-    let value = (1.0 - alpha)* Vector3::new(1.0, 1.0, 1.0) + alpha * Vector3::new(0.5, 0.7, 1.0);
-
-    return Color {
-        red:    (255.999 * value.x) as u8,
-        green:  (255.999 * value.y) as u8,
-        blue:   (255.999 * value.z) as u8
-    };
+fn color_from_vector(color: Vector3<f64>) -> image::Rgb<u8> {
+    image::Rgb([
+        (255.999 * color.x) as u8,
+        (255.999 * color.y) as u8,
+        (255.999 * color.z) as u8
+    ])
 }
 
-fn ray_color(ray: Ray) -> Color {
+fn sky_color(ray: Ray) -> Vector3<f64> {
+    let normalized = ray.direction.normalize();
+    let alpha = 0.5 * (normalized.y + 1.0);
+    return (1.0 - alpha)* Vector3::new(1.0, 1.0, 1.0) + alpha * Vector3::new(0.5, 0.7, 1.0)
+}
+
+fn ray_color(ray: Ray, max_depth: u32) -> Vector3<f64> {
+    if max_depth <= 0 {
+        return Vector3::new(255.0, 255.0, 255.0);
+    } 
+    
     let objects: Vec<Box<dyn Hittable>> = vec!(
         Box::new(Sphere {
-            origin: Vector3::new(-0.5, 0.0, -1.0),
+            origin: Vector3::new(0.0, 0.0, -1.0),
             radius: 0.5
         }),
         Box::new(Sphere {
-            origin: Vector3::new(0.0, 0.0, -1.5),
-            radius: 0.5
+            origin: Vector3::new(0.0, -100.5, -1.0),
+            radius: 100.0
         })
     );
 
-    let t_max = 1000.0;
+    let t_max = 100000000.0;
     let t_min = 0.001;
 
     return match objects.hit(ray, t_min, t_max) {
         Some(record) => {
             let direction = rand_on_hemisphere(record.normal);
-            return ray_color(Ray::new(record.hit, direction));
-            // let value: Vector3<f64> = 0.5 * (record.normal + Vector3::new(1.0, 1.0, 1.0));
-            // return Color { 
-                // red:   (255.999 * value.x) as u8,
-                // green: (255.999 * value.y) as u8,
-                // blue:  (255.999 * value.z) as u8
-            // };
+            return 0.5 * ray_color(Ray::new(record.hit, direction), max_depth - 1);
         },
         None => sky_color(ray)
     }
@@ -106,9 +104,9 @@ fn main() {
             let pixel = pixel_upper_left + (i as f64) * delta_u + (j as f64) * delta_v;
             let ray_direction = pixel - camera_center;
             let ray = Ray::new(camera_center, ray_direction.clone());
-            let color = ray_color(ray);
             let pixel = image.get_pixel_mut(i, j);
-            *pixel = image::Rgb([color.red, color.green, color.blue]);
+            let color = ray_color(ray, 50);
+            *pixel = color_from_vector(color);
         }
     }
     image.save("test.png").unwrap();
