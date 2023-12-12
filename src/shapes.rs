@@ -1,6 +1,6 @@
 use crate::ray::Ray;
 use crate::hits::{HitRecord, Hittable};
-
+use crate::interval::Interval;
 use cgmath::Vector3;
 use cgmath::InnerSpace;
 
@@ -10,10 +10,10 @@ pub struct Sphere {
 }
 
 impl Hittable for Vec<Box<dyn Hittable>> {
-    fn hit(&self, ray: Ray, min_distance: f64, max_distance: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: Ray, render_bounds: &Interval<f64>) -> Option<HitRecord> {
         let hits = self
             .into_iter()
-            .map(|obj| obj.hit(ray, min_distance, max_distance))
+            .map(|obj| obj.hit(ray, render_bounds))
             .filter(|hit| hit.is_some())
             .map(|hit| hit.unwrap());
     
@@ -25,7 +25,7 @@ impl Hittable for Vec<Box<dyn Hittable>> {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: Ray, min_distance: f64, max_distance: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: Ray, render_bounds: &Interval<f64>) -> Option<HitRecord> {
         // TODO: This function should be refactored once I have some time
         let oc = ray.origin - self.origin;
         let a: f64 = ray.direction.dot(ray.direction);
@@ -36,16 +36,13 @@ impl Hittable for Sphere {
 
         let sqrtd = discriminant.sqrt();
         
-        let is_inside_interval = |x| {
-            return min_distance <= x && x <= max_distance;
-        };
         let left_root = (-half_b - sqrtd) / a;
         let right_root = (-half_b + sqrtd) / a;
 
         let mut closest_root = left_root;
-        if !is_inside_interval(left_root) {
+        if render_bounds.is_outside(left_root) {
             closest_root = right_root;
-            if !is_inside_interval(right_root) {
+            if render_bounds.is_outside(right_root) {
                 return None;
             }
         }

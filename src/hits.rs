@@ -1,5 +1,6 @@
 use crate::ray::Ray;
 use cgmath::Vector3;
+use crate::interval::Interval;
 use std::cmp::Ordering;
 
 #[derive(Clone, Debug)]
@@ -22,5 +23,5 @@ impl PartialEq for HitRecord {
 }
 
 pub trait Hittable {
-    fn hit(&self, ray: Ray, min_distance: f64, max_distance: f64) -> Option<HitRecord>;
+    fn hit(&self, ray: Ray, render_bounds: &Interval<f64>) -> Option<HitRecord>;
 }
