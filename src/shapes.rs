@@ -4,11 +4,6 @@ use crate::interval::Interval;
 use cgmath::Vector3;
 use cgmath::InnerSpace;
 
-pub struct Sphere {
-    pub origin: Vector3<f64>,
-    pub radius: f64
-}
-
 impl Hittable for Vec<Box<dyn Hittable>> {
     fn hit(&self, ray: Ray, render_bounds: &Interval) -> Option<HitRecord> {
         let hits = self
@@ -22,6 +17,11 @@ impl Hittable for Vec<Box<dyn Hittable>> {
 
         return closest_hit;
     }
+}
+
+pub struct Sphere {
+    pub origin: Vector3<f64>,
+    pub radius: f64
 }
 
 impl Hittable for Sphere {
@@ -55,5 +55,62 @@ impl Hittable for Sphere {
             distance: closest_root,
             normal: if front_face { outward_normal } else { -outward_normal }
         });
+    }
+}
+
+pub struct Triangle {
+    pub vertices: [Vector3<f64>; 3]
+}
+
+impl Triangle {
+    fn is_inside(&self, intersection: Vector3<f64>, normal: Vector3<f64>) -> bool {
+        // Edge 0 
+        let edge0 = self.vertices[1] - self.vertices[0];
+        let c0 = edge0.cross(intersection - self.vertices[0]);
+        if normal.dot(c0) < 0.0 { return false; }
+
+        // Edge 1
+        let edge1 = self.vertices[2] - self.vertices[1]; 
+        let c1 = edge1.cross(intersection - self.vertices[1]);
+        if normal.dot(c1) < 0.0 { return false; }
+
+        // Edge 2
+        let edge2 = self.vertices[0] - self.vertices[2]; 
+        let c2 = edge2.cross(intersection - self.vertices[2]);
+        if normal.dot(c2) < 0.0 { return false; }
+
+        return true;
+    }
+}
+
+impl Hittable for Triangle {
+    fn hit(&self, ray: Ray, render_bounds: &Interval) -> Option<HitRecord> {
+        let edge1 = self.vertices[1] - self.vertices[0];
+        let edge2 = self.vertices[2] - self.vertices[0];
+
+        let normal = edge1.cross(edge2);
+
+        if normal.dot(ray.direction).abs() < 0.001 {
+            // Triangle and plane are parallel
+            return None;
+        }
+
+        let d = -normal.dot(self.vertices[0]);
+        let distance = -(normal.dot(ray.origin) + d) / normal.dot(ray.direction);
+        
+        if render_bounds.is_outside(distance) {
+            return None;
+        }
+
+        let intersection = ray.at(distance);
+        if !self.is_inside(intersection, normal) {
+            return None;
+        }
+
+        Some(HitRecord {
+            hit: intersection,
+            distance: distance,
+            normal: normal
+        })
     }
 }
