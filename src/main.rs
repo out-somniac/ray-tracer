@@ -21,7 +21,11 @@ fn main() {
 
     let objects: Vec<Box<dyn Hittable>> = vec!(
         Box::new(Sphere {
-            origin: Vector3::new(0.0, 0.0, -1.0),
+            origin: Vector3::new(-0.5, 0.0, -1.0),
+            radius: 0.5
+        }),
+        Box::new(Sphere {
+            origin: Vector3::new(0.5, 0.0, -1.0),
             radius: 0.5
         }),
         Box::new(Sphere {

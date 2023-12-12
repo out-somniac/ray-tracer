@@ -10,7 +10,7 @@ pub struct Sphere {
 }
 
 impl Hittable for Vec<Box<dyn Hittable>> {
-    fn hit(&self, ray: Ray, render_bounds: &Interval<f64>) -> Option<HitRecord> {
+    fn hit(&self, ray: Ray, render_bounds: &Interval) -> Option<HitRecord> {
         let hits = self
             .into_iter()
             .map(|obj| obj.hit(ray, render_bounds))
@@ -25,7 +25,7 @@ impl Hittable for Vec<Box<dyn Hittable>> {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: Ray, render_bounds: &Interval<f64>) -> Option<HitRecord> {
+    fn hit(&self, ray: Ray, render_bounds: &Interval) -> Option<HitRecord> {
         // TODO: This function should be refactored once I have some time
         let oc = ray.origin - self.origin;
         let a: f64 = ray.direction.dot(ray.direction);
@@ -46,11 +46,14 @@ impl Hittable for Sphere {
                 return None;
             }
         }
+
+        let outward_normal = (ray.at(closest_root) - self.origin) / self.radius;
+        let front_face = ray.direction.dot(outward_normal) < 0.0;
         
         return Some(HitRecord {
             hit: ray.at(closest_root),
             distance: closest_root,
-            normal: (ray.at(closest_root) - self.origin) / self.radius
+            normal: if front_face { outward_normal } else { -outward_normal }
         });
     }
 }

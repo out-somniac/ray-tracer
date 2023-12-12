@@ -6,14 +6,12 @@ use image::{ImageBuffer, RgbImage};
 use rand::Rng;
 
 fn rand_normal() -> Vector3<f64> {
-    use rand::distributions::{Distribution, Uniform}; 
     let mut rng = rand::thread_rng();
-    let distribution = Uniform::new(-1.0, 1.0);
     loop {
         let random = Vector3::new(
-            distribution.sample(&mut rng),
-            distribution.sample(&mut rng),
-            distribution.sample(&mut rng));
+            rng.gen_range(-1.0..1.0),
+            rng.gen_range(-1.0..1.0),
+            rng.gen_range(-1.0..1.0));
 
         if random.dot(random) < 1.0 {
             return random.normalize();
@@ -45,7 +43,7 @@ fn ray_color(ray: Ray, objects: &Vec<Box<dyn Hittable>>, max_depth: u32) -> Vect
         return Vector3::new(255.0, 255.0, 255.0);
     } 
     
-    return match objects.hit(ray, &Interval::new(0.0, f64::INFINITY)) {
+    return match objects.hit(ray, &Interval::new(0.0001, f64::INFINITY)) {
         Some(record) => {
             let direction = rand_on_hemisphere(record.normal);
             return 0.5 * ray_color(Ray::new(record.hit, direction), objects, max_depth - 1);
@@ -117,6 +115,8 @@ impl Camera {
                 }
                 let pixel = image.get_pixel_mut(i, j);
                 color = color / self.pixel_samples as f64;
+                let intensity = Interval::new(0.0, 0.999);
+                color.map(|channel| intensity.clamp(channel));
                 *pixel = color_from_vector(color);
             }
             println!(">{}%", (100.0 * i as f64 / self.width as f64) as u8);

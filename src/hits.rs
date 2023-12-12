@@ -23,5 +23,5 @@ impl PartialEq for HitRecord {
 }
 
 pub trait Hittable {
-    fn hit(&self, ray: Ray, render_bounds: &Interval<f64>) -> Option<HitRecord>;
+    fn hit(&self, ray: Ray, render_bounds: &Interval) -> Option<HitRecord>;
 }
