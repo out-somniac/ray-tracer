@@ -46,6 +46,8 @@ fn ray_color(ray: Ray, objects: &Vec<Box<dyn Hittable>>, max_depth: u32) -> Vect
     
     return match objects.hit(ray, &Interval::new(0.0001, f64::INFINITY)) {
         Some(record) => {
+            // Uncomment to view normals
+            // return 0.5 * (record.normal + Vector3::new(1.0, 1.0, 1.0));
             let direction = record.normal + rand_normal();
             return 0.3 * ray_color(Ray::new(record.hit, direction), objects, max_depth - 1);
         },

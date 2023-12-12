@@ -49,22 +49,22 @@ fn create_cube(origin: Vector3<f64>, size: f64) -> Vec<Box<dyn Hittable>> {
         // Left Face
         Box::new(Triangle {vertices: [
             origin - dx + dy + dz,
-            origin - dx - dy + dz,
-            origin - dx - dy - dz]}),
+            origin - dx - dy - dz,
+            origin - dx - dy + dz]}),
         Box::new(Triangle {vertices: [
             origin - dx + dy + dz,
-            origin - dx - dy - dz,
-            origin - dx + dy - dz]}),
+            origin - dx + dy - dz,
+            origin - dx - dy - dz]}),
 
         // Bottom Face
         Box::new(Triangle {vertices: [
             origin - dx - dy - dz,
-            origin - dx - dy + dz,
-            origin + dx - dy + dz]}),
+            origin + dx - dy + dz,
+            origin - dx - dy + dz]}),
         Box::new(Triangle {vertices: [
             origin - dx - dy - dz,
-            origin + dx - dy + dz,
-            origin + dx - dy - dz]}),
+            origin + dx - dy - dz,
+            origin + dx - dy + dz]}),
 
         // Top Face
         Box::new(Triangle {vertices: [
@@ -90,9 +90,9 @@ fn main() {
 
     let mut objects: Vec<Box<dyn Hittable>> = vec!();
     objects.extend(create_cube(Vector3::new(0.25, 0.25, -0.5), 0.25));
-    objects.extend(create_cube(Vector3::new(-0.3, -0.1, -0.3), 0.2));
+    objects.extend(create_cube(Vector3::new(-0.3, -0.2, -0.3), 0.2));
     objects.push(Box::new(Sphere {
-        origin: Vector3::new(0.2, -0.2, -0.5),
+        origin: Vector3::new(0.0, -0.2, -0.5),
         radius: 0.25
     }));
 

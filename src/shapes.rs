@@ -88,7 +88,7 @@ impl Hittable for Triangle {
         let edge1 = self.vertices[1] - self.vertices[0];
         let edge2 = self.vertices[2] - self.vertices[0];
 
-        let normal = edge1.cross(edge2);
+        let normal = edge1.cross(edge2).normalize();
 
         if normal.dot(ray.direction).abs() < 0.001 {
             // Triangle and plane are parallel
