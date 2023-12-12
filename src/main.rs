@@ -8,7 +8,7 @@ mod vector_utils;
 
 use camera::Camera;
 use cgmath::Vector3;
-use material::{Lambertian, Material};
+use material::{Metal, Lambertian, Material};
 use crate::hits::Hittable;
 use crate::shapes::{Sphere, Triangle};
 use std::rc::Rc;
@@ -125,34 +125,34 @@ fn main() {
         800,
         Vector3::new(0.0, 0.0, 0.0),
         1.0,
-        25,
-        10
+        50,
+        50
     );
 
     let mut objects: Vec<Box<dyn Hittable>> = vec!();
 
     // Cubes
-    let cube_material: Rc<dyn Material> = Rc::new(Lambertian {
-        albedo: Vector3::new(0.3, 0.3, 0.3)
-    });
-    
     objects.extend(create_cube(
         Vector3::new(0.25, 0.25, -0.5), 
         0.25,
-        cube_material.clone()
+        Rc::new(Lambertian {
+            albedo: Vector3::new(0.76, 0.07, 0.57)
+        })
     ));
     objects.extend(create_cube(
         Vector3::new(-0.3, -0.2, -0.3),
         0.2,
-        cube_material.clone()
+        Rc::new(Lambertian {
+            albedo: Vector3::new(0.91, 0.74, 0.87)
+        })
     ));
 
     // Sphere
     objects.push(Box::new(Sphere {
-        origin: Vector3::new(0.0, -0.2, -0.5),
+        origin: Vector3::new(0.05, -0.2, -0.5),
         radius: 0.25,
-        material: Rc::new(Lambertian {
-            albedo: Vector3::new(0.3, 0.3, 0.3)
+        material: Rc::new(Metal {
+            albedo: Vector3::new(0.94, 0.25, 0.25)
         })
     }));
 

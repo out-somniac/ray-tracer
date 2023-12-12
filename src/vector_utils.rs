@@ -32,3 +32,7 @@ pub fn color_from_vector(color: Vector3<f64>) -> image::Rgb<u8> {
 pub fn channel_multiply(u: Vector3<f64>, v: Vector3<f64>) -> Vector3<f64> {
     Vector3::new(u.x * v.x, u.y * v.y, u.z * v.z)
 }
+
+pub fn reflect(u: Vector3<f64>, normal: Vector3<f64>) -> Vector3<f64> {
+    return u - 2.0 * u.dot(normal) * normal;
+}

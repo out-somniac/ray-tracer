@@ -7,9 +7,12 @@ use crate::vector_utils::{channel_multiply, color_from_vector};
 use rand::Rng;
 
 fn sky_color(ray: Ray) -> Vector3<f64> {
+    let bottom_color = Vector3::new(182.0, 255.0, 250.0) / 255.0;
+    let top_color = Vector3::new(104.0, 126.0, 255.0) / 255.0;
+
     let normalized = ray.direction.normalize();
     let alpha = 0.5 * (normalized.y + 1.0);
-    return (1.0 - alpha)* Vector3::new(1.0, 1.0, 1.0) + alpha * Vector3::new(0.5, 0.7, 1.0)
+    return (1.0 - alpha) * bottom_color + alpha * top_color; 
 }
 
 fn ray_color(ray: Ray, objects: &Vec<Box<dyn Hittable>>, max_depth: u32) -> Vector3<f64> {
