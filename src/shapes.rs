@@ -1,8 +1,9 @@
 use crate::ray::Ray;
 use crate::hits::{HitRecord, Hittable};
 use crate::interval::Interval;
-use cgmath::Vector3;
-use cgmath::InnerSpace;
+use cgmath::{Vector3, InnerSpace};
+use crate::material::Material;
+use std::rc::Rc;
 
 impl Hittable for Vec<Box<dyn Hittable>> {
     fn hit(&self, ray: Ray, render_bounds: &Interval) -> Option<HitRecord> {
@@ -21,7 +22,8 @@ impl Hittable for Vec<Box<dyn Hittable>> {
 
 pub struct Sphere {
     pub origin: Vector3<f64>,
-    pub radius: f64
+    pub radius: f64,
+    pub material: Rc<dyn Material>
 }
 
 impl Hittable for Sphere {
@@ -53,13 +55,15 @@ impl Hittable for Sphere {
         return Some(HitRecord {
             hit: ray.at(closest_root),
             distance: closest_root,
-            normal: if front_face { outward_normal } else { -outward_normal }
+            normal: if front_face { outward_normal } else { -outward_normal },
+            material: self.material.clone()
         });
     }
 }
 
 pub struct Triangle {
-    pub vertices: [Vector3<f64>; 3]
+    pub vertices: [Vector3<f64>; 3],
+    pub material: Rc<dyn Material>
 }
 
 impl Triangle {
@@ -110,7 +114,8 @@ impl Hittable for Triangle {
         Some(HitRecord {
             hit: intersection,
             distance: distance,
-            normal: normal
+            normal: normal,
+            material: self.material.clone()
         })
     }
 }

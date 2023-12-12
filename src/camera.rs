@@ -3,35 +3,8 @@ use crate::ray::Ray;
 use crate::hits::Hittable;
 use crate::interval::Interval;
 use image::{ImageBuffer, RgbImage};
+use crate::vector_utils::{channel_multiply, color_from_vector};
 use rand::Rng;
-
-fn rand_normal() -> Vector3<f64> {
-    let mut rng = rand::thread_rng();
-    loop {
-        let random = Vector3::new(
-            rng.gen_range(-1.0..1.0),
-            rng.gen_range(-1.0..1.0),
-            rng.gen_range(-1.0..1.0));
-
-        if random.dot(random) < 1.0 {
-            return random.normalize();
-        }
-    }
-}
-
-#[allow(dead_code)]
-fn rand_on_hemisphere(normal: Vector3<f64>) -> Vector3<f64> {
-    let random = rand_normal();
-    return if random.dot(normal) > 0.0 { random } else { -random }
-}
-
-fn color_from_vector(color: Vector3<f64>) -> image::Rgb<u8> {
-    image::Rgb([
-        (255.999 * color.x) as u8,
-        (255.999 * color.y) as u8,
-        (255.999 * color.z) as u8
-    ])
-}
 
 fn sky_color(ray: Ray) -> Vector3<f64> {
     let normalized = ray.direction.normalize();
@@ -48,8 +21,16 @@ fn ray_color(ray: Ray, objects: &Vec<Box<dyn Hittable>>, max_depth: u32) -> Vect
         Some(record) => {
             // Uncomment to view normals
             // return 0.5 * (record.normal + Vector3::new(1.0, 1.0, 1.0));
-            let direction = record.normal + rand_normal();
-            return 0.3 * ray_color(Ray::new(record.hit, direction), objects, max_depth - 1);
+
+            match record.material.scatter(ray, &record) {
+                Some((attenuation, scattered)) => {
+                    return channel_multiply(
+                        attenuation, 
+                        ray_color(scattered, objects, max_depth - 1)
+                    );
+                },
+                None => Vector3::new(0.0, 0.0, 0.0)
+            }
         },
         None => sky_color(ray)
     }

@@ -2,12 +2,14 @@ use crate::ray::Ray;
 use cgmath::Vector3;
 use crate::interval::Interval;
 use std::cmp::Ordering;
+use crate::material::Material;
+use std::rc::Rc;
 
-#[derive(Clone, Debug)]
 pub struct HitRecord {
     pub hit: Vector3<f64>,
     pub distance: f64,
-    pub normal: Vector3<f64>
+    pub normal: Vector3<f64>,
+    pub material: Rc<dyn Material>
 }
 
 impl PartialOrd for HitRecord {
