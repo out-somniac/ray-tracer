@@ -14,7 +14,9 @@ fn main() {
         16.0 / 9.0,
         800,
         Vector3::new(0.0, 0.0, 0.0),
-        1.0
+        1.0,
+        25,
+        10
     );
 
     let objects: Vec<Box<dyn Hittable>> = vec!(
