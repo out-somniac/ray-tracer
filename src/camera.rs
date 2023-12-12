@@ -19,6 +19,7 @@ fn rand_normal() -> Vector3<f64> {
     }
 }
 
+#[allow(dead_code)]
 fn rand_on_hemisphere(normal: Vector3<f64>) -> Vector3<f64> {
     let random = rand_normal();
     return if random.dot(normal) > 0.0 { random } else { -random }
@@ -45,12 +46,16 @@ fn ray_color(ray: Ray, objects: &Vec<Box<dyn Hittable>>, max_depth: u32) -> Vect
     
     return match objects.hit(ray, &Interval::new(0.0001, f64::INFINITY)) {
         Some(record) => {
-            let direction = rand_on_hemisphere(record.normal);
-            return 0.5 * ray_color(Ray::new(record.hit, direction), objects, max_depth - 1);
+            let direction = record.normal + rand_normal();
+            return 0.3 * ray_color(Ray::new(record.hit, direction), objects, max_depth - 1);
         },
         None => sky_color(ray)
     }
 }  
+
+fn linear_to_gamma(channel: f64) -> f64 {
+    channel.sqrt()
+}
 
 pub struct Camera {
     width: u32,
@@ -117,6 +122,7 @@ impl Camera {
                 color = color / self.pixel_samples as f64;
                 let intensity = Interval::new(0.0, 0.999);
                 color.map(|channel| intensity.clamp(channel));
+                color.map(|channel| linear_to_gamma(channel));
                 *pixel = color_from_vector(color);
             }
             println!(">{}%", (100.0 * i as f64 / self.width as f64) as u8);
