@@ -49,12 +49,11 @@ impl Hittable for Sphere {
                 return None;
             }
         }
-        // let outward_normal = (ray.at(closest_root) - self.origin) / self.radius;
-        // let front_facing = ray.direction.dot(outward_normal) < 0.0;
+        
         return Some(HitRecord {
             hit: ray.at(closest_root),
             distance: closest_root,
-            normal: (ray.at(closest_root) - self.origin) / self.radius // if front_facing { outward_normal } else { -outward_normal }
+            normal: (ray.at(closest_root) - self.origin) / self.radius
         });
     }
 }

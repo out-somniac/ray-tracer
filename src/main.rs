@@ -1,6 +1,7 @@
 mod shapes;
 mod ray;
 mod hits;
+mod interval;
 
 use ray::Ray;
 use shapes::Sphere;
