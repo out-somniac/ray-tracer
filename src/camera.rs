@@ -1,7 +1,6 @@
 use cgmath::{Vector3, InnerSpace};
 use crate::ray::Ray;
 use crate::hits::Hittable;
-use crate::shapes::Sphere;
 use crate::interval::Interval;
 use image::{ImageBuffer, RgbImage};
 
@@ -41,26 +40,15 @@ fn sky_color(ray: Ray) -> Vector3<f64> {
     return (1.0 - alpha)* Vector3::new(1.0, 1.0, 1.0) + alpha * Vector3::new(0.5, 0.7, 1.0)
 }
 
-fn ray_color(ray: Ray, max_depth: u32) -> Vector3<f64> {
+fn ray_color(ray: Ray, objects: &Vec<Box<dyn Hittable>>, max_depth: u32) -> Vector3<f64> {
     if max_depth <= 0 {
         return Vector3::new(255.0, 255.0, 255.0);
     } 
     
-    let objects: Vec<Box<dyn Hittable>> = vec!(
-        Box::new(Sphere {
-            origin: Vector3::new(0.0, 0.0, -1.0),
-            radius: 0.5
-        }),
-        Box::new(Sphere {
-            origin: Vector3::new(0.0, -100.5, -1.0),
-            radius: 100.0
-        })
-    );
-
     return match objects.hit(ray, &Interval::new(0.0, f64::INFINITY)) {
         Some(record) => {
             let direction = rand_on_hemisphere(record.normal);
-            return 0.5 * ray_color(Ray::new(record.hit, direction), max_depth - 1);
+            return 0.5 * ray_color(Ray::new(record.hit, direction), objects, max_depth - 1);
         },
         None => sky_color(ray)
     }
@@ -107,7 +95,7 @@ impl Camera {
     }
 
 
-    pub fn render(&self) -> RgbImage {
+    pub fn render(&self, objects: &Vec<Box<dyn Hittable>>) -> RgbImage {
         let mut image: RgbImage = ImageBuffer::new(self.width, self.height);
         for i in 0..self.width {
             for j in 0..self.height {
@@ -115,7 +103,7 @@ impl Camera {
                 let ray_direction = pixel - self.position;
                 let ray = Ray::new(self.position, ray_direction.clone());
                 let pixel = image.get_pixel_mut(i, j);
-                let color = ray_color(ray, 50);
+                let color = ray_color(ray, objects, 50);
                 *pixel = color_from_vector(color);
             }
         }

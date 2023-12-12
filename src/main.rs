@@ -6,7 +6,8 @@ mod camera;
 
 use camera::Camera;
 use cgmath::Vector3;
-use image::RgbImage;
+use crate::hits::Hittable;
+use crate::shapes::Sphere;
 
 fn main() {
     let camera = Camera::new(
@@ -16,5 +17,16 @@ fn main() {
         1.0
     );
 
-    camera.render().save("test.png").unwrap();
+    let objects: Vec<Box<dyn Hittable>> = vec!(
+        Box::new(Sphere {
+            origin: Vector3::new(0.0, 0.0, -1.0),
+            radius: 0.5
+        }),
+        Box::new(Sphere {
+            origin: Vector3::new(0.0, -100.5, -1.0),
+            radius: 100.0
+        })
+    );
+
+    camera.render(&objects).save("test.png").unwrap();
 }
