@@ -147,13 +147,23 @@ fn main() {
         })
     ));
 
-    // Sphere
+    // Spheres
     objects.push(Box::new(Sphere {
         origin: Vector3::new(0.05, -0.2, -0.5),
         radius: 0.25,
-        material: Rc::new(Metal {
-            albedo: Vector3::new(0.94, 0.25, 0.25)
-        })
+        material: Rc::new(Metal::new(
+            Vector3::new(0.94, 0.25, 0.25),
+            0.2
+        ))
+    }));
+    
+    objects.push(Box::new(Sphere {
+        origin: Vector3::new(0.55, -0.2, -0.5),
+        radius: 0.25,
+        material: Rc::new(Metal::new(
+            Vector3::new(0.94, 0.25, 0.25),
+            0.9
+        ))
     }));
 
     camera.render(&objects).save("test.png").unwrap();

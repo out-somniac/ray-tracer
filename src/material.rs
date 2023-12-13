@@ -7,16 +7,30 @@ pub trait Material {
 }
 
 pub struct Metal {
-    pub albedo: Vector3<f64>
+    pub albedo: Vector3<f64>,
+    pub fuzz: f64
+}
+
+impl Metal {
+    pub fn new(albedo: Vector3<f64>, fuzz: f64) -> Metal {
+        Metal {
+            albedo: albedo,
+            fuzz: fuzz.clamp(0.0, fuzz)
+        }
+    }
 }
 
 impl Material for Metal {
     fn scatter(&self, ray: Ray, record: &HitRecord) -> Option<(Vector3<f64>, Ray)> {
         let reflected = reflect(ray.direction.normalize(), record.normal);
-        let scattered = Ray::new(record.hit, reflected);
+        let scattered = Ray::new(record.hit, reflected + self.fuzz * rand_normal());
         let attenuation = self.albedo;
+        if scattered.direction.dot(record.normal) <= 0.0 {
+            return None;
+        }
+
         return Some((attenuation, scattered));
-    } 
+    }
 }
 
 pub struct Lambertian {
