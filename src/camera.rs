@@ -17,7 +17,7 @@ fn sky_color(ray: Ray) -> Vector3<f64> {
 
 fn ray_color(ray: Ray, objects: &Vec<Box<dyn Hittable>>, max_depth: u32) -> Vector3<f64> {
     if max_depth <= 0 {
-        return Vector3::new(255.0, 255.0, 255.0);
+        return Vector3::new(1.0, 1.0, 1.0);
     } 
     
     return match objects.hit(ray, &Interval::new(0.0001, f64::INFINITY)) {
