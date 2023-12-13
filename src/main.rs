@@ -223,5 +223,5 @@ fn main() {
         Vector3::new(0.91, 0.74, 0.87),
         0.1
     ))));
-    camera.render(&objects).save("test.png").unwrap();
+    camera.render(&objects).save("output/test.png").unwrap();
 }
