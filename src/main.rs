@@ -8,7 +8,7 @@ mod vector_utils;
 
 use camera::Camera;
 use cgmath::Vector3;
-use material::{Metal, Material, Lambertian};
+use material::{Metal, Material, Lambertian, Dielectric};
 use crate::hits::Hittable;
 use crate::shapes::{Sphere, Triangle};
 use std::rc::Rc;
@@ -65,8 +65,8 @@ fn main() {
         800,
         Vector3::new(0.0, 0.0, 0.0),
         1.0,
-        10,
-        10
+        80,
+        80
     );
 
     let mut objects: Vec<Box<dyn Hittable>> = vec!();
@@ -77,6 +77,15 @@ fn main() {
         material: Rc::new(Metal::new(
             Vector3::new(0.94, 0.25, 0.25),
             0.0
+        ))
+    }));
+
+    objects.push(Box::new(Sphere {
+        origin: Vector3::new(0.0, 0.0, -1.0),
+        radius: -0.5,
+        material: Rc::new(Dielectric::new(
+            Vector3::new(0.94, 0.25, 0.25),
+            1.5
         ))
     }));
     
@@ -97,12 +106,14 @@ fn main() {
         })
     }));
 
-    let filepath = Path::new("resources/models/suzanne.obj");
-    let mesh = load_single_obj(filepath);
-    objects.extend(mesh_to_triangle_vec(mesh, Rc::new(Metal::new(
-        Vector3::new(0.91, 0.74, 0.87),
-        0.1,
-    )), Vector3::new(0.0, 0.0, -2.0)));
+    // let filepath = Path::new("resources/models/suzanne.obj");
+    // let mesh = load_single_obj(filepath);
+    // objects.extend(mesh_to_triangle_vec(mesh, Rc::new(Metal::new(
+    //     Vector3::new(0.91, 0.74, 0.87),
+    //     0.1,
+    // )), Vector3::new(0.0, 0.0, -2.0)));
+
+
 
     camera
         .render(&objects)
