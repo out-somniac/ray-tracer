@@ -81,16 +81,23 @@ fn main() {
     }));
 
     objects.push(Box::new(Sphere {
-        origin: Vector3::new(0.0, 0.0, -1.0),
-        radius: -0.5,
+        origin: Vector3::new(0.0, -0.25, -1.0),
+        radius: 0.5,
         material: Rc::new(Dielectric::new(
-            Vector3::new(0.94, 0.25, 0.25),
-            1.5
+            1.2
         ))
     }));
     
     objects.push(Box::new(Sphere {
-        origin: Vector3::new(-1.2, 0.0, -1.0),
+        origin: Vector3::new(0.0, -0.25, -1.0),
+        radius: -0.45,
+        material: Rc::new(Dielectric::new(
+            1.2
+        ))
+    }));
+    
+    objects.push(Box::new(Sphere {
+        origin: Vector3::new(0.0, 0.25, -2.0),
         radius: 0.5,
         material: Rc::new(Metal::new(
             Vector3::new(0.23, 0.94, 0.25),
@@ -112,8 +119,6 @@ fn main() {
     //     Vector3::new(0.91, 0.74, 0.87),
     //     0.1,
     // )), Vector3::new(0.0, 0.0, -2.0)));
-
-
 
     camera
         .render(&objects)

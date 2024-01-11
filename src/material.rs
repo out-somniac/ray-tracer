@@ -39,7 +39,7 @@ pub struct Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, ray: Ray, record: &HitRecord) -> Option<(Vector3<f64>, Ray)> {
+    fn scatter(&self, _ray: Ray, record: &HitRecord) -> Option<(Vector3<f64>, Ray)> {
         let scattered_direction = record.normal + rand_normal();
         let scattered = Ray::new(record.hit, scattered_direction);
         let attenuation = self.albedo;
@@ -48,14 +48,12 @@ impl Material for Lambertian {
 }
 
 pub struct Dielectric {
-    pub albedo: Vector3<f64>,
     pub refractive_index: f64
 }
 
 impl Dielectric {
-    pub fn new(albedo: Vector3<f64>, refractive_index: f64) -> Dielectric {
+    pub fn new(refractive_index: f64) -> Dielectric {
         Dielectric {
-            albedo: albedo,
             refractive_index: refractive_index
         }
     }
@@ -77,24 +75,25 @@ fn refract(uv: Vector3<f64>, normal: Vector3<f64>, refractive_index: f64) -> Vec
 
 impl Material for Dielectric {
     fn scatter(&self, ray: Ray, record: &HitRecord) -> Option<(Vector3<f64>, Ray)> {
-        let refraction_ratio = 1.0 / self.refractive_index;
+        let attenuation = Vector3::new(1.0, 1.0, 1.0);
+        let refraction_ratio = if ray.direction.dot(record.normal) < 0.0 {
+            1.0 / self.refractive_index
+        } else {
+            self.refractive_index
+        };
         let unit_direction = ray.direction.normalize();
-
         let cos_theta = f64::min(record.normal.dot(-unit_direction), 1.0);
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+
         let no_refraction = refraction_ratio * sin_theta > 1.0;
-        
         let mut rng = rand::thread_rng();
-        let direction = if no_refraction || reflectance(cos_theta, refraction_ratio) > rng.gen_range(-1.0..1.0){
+        let direction = if no_refraction || reflectance(cos_theta, refraction_ratio) > rng.gen_range(0.0..1.0) {
             reflect(unit_direction, record.normal)
         } else {
             refract(unit_direction, record.normal, refraction_ratio)
         };
 
-        let refracted = refract(direction, record.normal, refraction_ratio);
-
-        let attenuation = Vector3::new(1.0, 1.0, 1.0);
-        let scattered = Ray::new(record.hit, refracted);
+        let scattered = Ray::new(record.hit, direction);
         return Some((attenuation, scattered));
     } 
 }
